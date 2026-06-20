@@ -24,6 +24,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/ui/view/custom_browser_view_layout.h"
+#endif
+
 using web_modal::ModalDialogHostObserver;
 using web_modal::WebContentsModalDialogHost;
 
@@ -142,8 +146,13 @@ std::unique_ptr<BrowserViewLayout> BrowserViewLayout::CreateLayout(
   if (browser) {
     switch (browser->GetType()) {
       case BrowserWindowInterface::Type::TYPE_NORMAL:
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+        return std::make_unique<custom_browser::CustomBrowserViewLayout>(
+            std::move(delegate), browser, std::move(views));
+#else
         return std::make_unique<BrowserViewTabbedLayoutImpl>(
             std::move(delegate), std::move(views));
+#endif
       case BrowserWindowInterface::Type::TYPE_APP:
       case BrowserWindowInterface::Type::TYPE_APP_POPUP: {
         bool is_web_app =

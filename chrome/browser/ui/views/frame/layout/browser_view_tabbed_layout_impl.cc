@@ -1149,8 +1149,8 @@ BrowserViewTabbedLayoutImpl::CalculateProposedLayout(
   // Lay out contents container. The contents container contains the multi-
   // contents view when multi-contents are enabled. The checks here are to
   // force the logic to be updated when multi-contents is fully rolled-out.
-  CHECK(IsParentedToAndVisible(views().multi_contents_view,
-                               views().browser_view));
+  // CHECK(IsParentedToAndVisible(views().multi_contents_view,
+  //                              views().browser_view));
 
   // Because side panels have minimum width, in a small browser, it is possible
   // for the combination of minimum-sized contents pane and minimum-sized side

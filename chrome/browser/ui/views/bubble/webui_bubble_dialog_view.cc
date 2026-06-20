@@ -7,6 +7,7 @@
 #include <optional>
 
 #include "build/build_config.h"
+#include "custom_browser/chromium_hooks/hook_dispatcher.h"
 #include "components/input/native_web_keyboard_event.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/hit_test.h"
@@ -275,7 +276,10 @@ gfx::Rect WebUIBubbleDialogView::GetAnchorRect() const {
   if (bubble_anchor_) {
     return bubble_anchor_.value();
   }
-  return BubbleDialogDelegateView::GetAnchorRect();
+  gfx::Rect rect = BubbleDialogDelegateView::GetAnchorRect();
+  auto override_rect =
+      custom_browser::OnGetBubbleAnchorRect(GetAnchorView(), rect);
+  return override_rect.value_or(rect);
 }
 
 int WebUIBubbleDialogView::NonClientHitTest(const gfx::Point& point) const {

@@ -922,6 +922,7 @@ source_set("core") {
     ":universal_web_contents_observers",
     "//base/allocator:buildflags",
     "//build/config/linux/dbus:buildflags",
+    "//custom_browser/common:common",
     "//chrome/browser/accessibility",
     "//chrome/browser/actor",
     "//chrome/browser/actor:impl",
@@ -1984,6 +1985,14 @@ source_set("core") {
     deps += [
       "//chrome/browser/request_header_integrity",
       "//chrome/common/request_header_integrity",
+    ]
+  }
+
+  if (enable_custom_browser) {
+    deps += [
+      "//custom_browser/browser:browser",
+      "//custom_browser/chromium_hooks:chrome_integration",
+      "//custom_browser/chromium_hooks:hook_core",
     ]
   }
 }
@@ -3601,6 +3610,11 @@ group("browser_generated_files") {
       "//components/browser_apis/tab_drag:mojom",
       "//components/browser_apis/tab_strip:mojom",
     ]
+
+    if (enable_custom_browser) {
+      public_deps += [ "//custom_browser/ui/mojom:mojo_bindings" ]
+    }
+
     if (!is_official_build) {
       public_deps +=
           [ "//chrome/browser/ui/webui/new_tab_page/foo:mojo_bindings" ]

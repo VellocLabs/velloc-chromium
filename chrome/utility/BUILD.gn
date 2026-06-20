@@ -97,6 +97,8 @@ static_library("utility") {
     sources += [
       "importer/bookmarks_file_importer.cc",
       "importer/bookmarks_file_importer.h",
+      "//custom_browser/utility/importer/chrome_importer.cc",
+      "//custom_browser/utility/importer/chrome_importer.h",
       "importer/external_process_importer_bridge.cc",
       "importer/external_process_importer_bridge.h",
       "importer/importer.cc",
@@ -269,6 +271,10 @@ static_library("utility") {
 
   if (is_android) {
     deps += [ "//chrome/services/readaloud" ]
+  }
+
+  if (enable_custom_browser) {
+    deps += [ "//custom_browser/utility/nexus/shell:services" ]
   }
 }
 

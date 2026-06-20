@@ -15,6 +15,10 @@
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
+#include "chrome/common/buildflags.h"
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/browser/nexus/upload/nexus_file_chooser_interceptor.h"
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/file_select_helper.h"
@@ -1129,6 +1133,14 @@ void BrowserWebContentsDelegate::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     scoped_refptr<content::FileSelectListener> listener,
     const blink::mojom::FileChooserParams& params) {
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // Answers the chooser with a file the Nexus agent staged for this tab;
+  // falls through to the native picker when nothing is armed.
+  if (nexus::NexusPendingUpload::TryAnswerChooser(render_frame_host, listener,
+                                                  params)) {
+    return;
+  }
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
   FileSelectHelper::RunFileChooser(render_frame_host, std::move(listener),
                                    params);
 }

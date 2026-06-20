@@ -47,6 +47,7 @@ source_set("bubble") {
   deps = [
     "//chrome/browser/ui/webui/top_chrome",
     "//components/input",
+    "//custom_browser/chromium_hooks:hook_core",
     "//ui/webui",
   ]
 

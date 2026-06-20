@@ -80,6 +80,10 @@ DEFINE_USER_DATA(DownloadToolbarUIController);
 #include "chrome/browser/ui/fullscreen_util_mac.h"
 #endif
 
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/ui/view/native_ui/native_ui_utils.h"
+#endif
+
 namespace {
 
 using GetBadgeTextCallback = base::RepeatingCallback<gfx::RenderText&()>;
@@ -93,6 +97,11 @@ constexpr float kProgressRingStrokeWidth = 2.0f;
 constexpr base::TimeDelta kAutoClosePartialViewDelay = base::Seconds(5);
 
 PinnedToolbarActions* GetPinnedToolbarActions(BrowserView* browser_view) {
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  if (!custom_browser::native_ui::utils::IsChromiumUI(browser_view)) {
+    return nullptr;
+  }
+#endif
   auto* toolbar_button_provider = browser_view->toolbar_button_provider();
   return toolbar_button_provider
              ? toolbar_button_provider->GetPinnedToolbarActions()
@@ -100,6 +109,13 @@ PinnedToolbarActions* GetPinnedToolbarActions(BrowserView* browser_view) {
 }
 
 ToolbarButton* GetDownloadsButton(BrowserView* browser_view) {
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  auto* download_button =
+      custom_browser::native_ui::utils::GetDownloadsButton(browser_view);
+  if (download_button) {
+    return download_button;
+  }
+#endif
   auto* container = GetPinnedToolbarActions(browser_view);
   return container ? container->GetDownloadButton() : nullptr;
 }

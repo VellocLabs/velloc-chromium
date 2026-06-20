@@ -257,6 +257,7 @@
       "chrome://add-supervision/*",
       "chrome://chrome-signin/*",
       "chrome://contextual-tasks/*",
+      "chrome://custom.top-chrome/*",
       "chrome://glic/*",
       "chrome://glic-fre/*",
       "chrome://glic-experimental-opt-in/*",
@@ -896,7 +897,8 @@
     "matches": [
       "chrome://os-settings/*",
       "chrome://settings/*",
-      "chrome://password-manager/*"
+      "chrome://password-manager/*",
+      "chrome://customize-chrome-side-panel.top-chrome/*"
     ]
   }],
   "sidePanel": {

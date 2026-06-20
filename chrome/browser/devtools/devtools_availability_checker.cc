@@ -17,6 +17,11 @@
 #include "chrome/browser/policy/developer_tools_policy_handler.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/buildflags.h"
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "content/public/common/url_constants.h"
+#include "custom_browser/common/url_constants.h"
+#endif
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -131,6 +136,18 @@ bool IsInspectionAllowed(Profile* profile, content::WebContents* web_contents) {
     return IsInspectionAllowed(
         profile, static_cast<const extensions::Extension*>(nullptr));
   }
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  const GURL& url = web_contents->GetURL();
+  if (url.SchemeIs(content::kChromeUIScheme) &&
+      url.GetHost() == custom_browser::kChromeUICustomBrowserHost) {
+    // Keep the custom top-chrome WebUI inspectable for debugging.
+#if DCHECK_IS_ON()
+    return true;
+#else
+    return false;
+#endif
+  }
+#endif
 
   if (base::FeatureList::IsEnabled(features::kDevToolsTargetLevelEvaluation)) {
     if (content::RenderFrameHost* main_frame =

@@ -220,6 +220,7 @@ if (!is_android && !is_mac) {
         "//chrome/installer/util:constants",
         "//chrome/installer/util:did_run_support",
         "//components/activity_reporter:buildflags",
+        "//custom_browser/common:common",
         "//components/crash/core/app",
         "//components/crash/core/app:run_as_crashpad_handler",
         "//components/version_info:channel",
@@ -230,6 +231,8 @@ if (!is_android && !is_mac) {
         "//sandbox/policy/mojom",
         "//third_party/crashpad/crashpad/util",
       ]
+
+      configs += [ "//custom_browser:custom_browser_icon_config" ]
 
       data_deps += [
         "//chrome/app/version_assembly:version_assembly_manifest",

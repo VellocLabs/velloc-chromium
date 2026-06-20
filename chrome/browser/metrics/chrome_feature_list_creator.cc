@@ -24,6 +24,7 @@
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/installer/util/initial_preferences.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/network_time/network_time_tracker.h"
@@ -40,6 +41,10 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/chromium_overrides/feature_list_override.h"
+#endif
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/installer/util/google_update_settings.h"
@@ -236,13 +241,18 @@ void ChromeFeatureListCreator::SetUpFieldTrials() {
       about_flags::RegisterAllFeatureVariationParameters(&flags_storage,
                                                          feature_list.get());
 
+  std::vector<base::FeatureList::FeatureOverrideInfo> switch_overrides =
+      content::GetSwitchDependentFeatureOverrides(
+          *base::CommandLine::ForCurrentProcess());
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  custom_browser::AppendFeatureListOverrides(&switch_overrides);
+#endif
+
   variations::VariationsService* variations_service =
       metrics_services_manager_->GetVariationsService();
   variations_service->SetUpFieldTrials(
-      variation_ids,
-      content::GetSwitchDependentFeatureOverrides(
-          *base::CommandLine::ForCurrentProcess()),
-      std::move(feature_list), browser_field_trials_.get());
+      variation_ids, switch_overrides, std::move(feature_list),
+      browser_field_trials_.get());
   variations::InitCrashKeys();
 }
 

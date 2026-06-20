@@ -27,6 +27,7 @@ import("//third_party/protobuf/proto_library.gni")
 import("//tools/metrics/generate_allowlist_from_histograms_file.gni")
 import("//ui/base/ui_features.gni")
 import("//ui/views/features.gni")
+import("//custom_browser/ui/custom_browser_view.gni")
 
 assert(enable_supervised_users)
 assert(!is_fuchsia, "Fuchsia shouldn't use anything in //chrome")
@@ -1125,6 +1126,19 @@ static_library("ui") {
 
   if (enable_offline_pages) {
     deps += [ "//chrome/browser/offline_pages" ]
+  }
+
+  if (enable_custom_browser) {
+    sources += browser_view_webui_sources
+    deps += [
+      "//components/guest_contents/browser",
+      "//custom_browser/browser/nexus:guest_config",
+      "//custom_browser/browser/nexus:nexus_settings_handler",
+      "//custom_browser/browser/nexus:nexus_webui_config",
+      "//custom_browser/common:common",
+      "//custom_browser/extensions:component_extensions",
+      "//custom_browser/resources:custom_browser_strings",
+    ]
   }
 
   if (enable_compose) {
@@ -2760,6 +2774,9 @@ static_library("ui") {
       "views/web_apps/frame_toolbar/web_app_toolbar_button_container.h",
     ]
 
+    if (enable_custom_browser) {
+      sources += browser_view_sources
+    }
     sources += get_target_outputs(":webui_name_variants")
 
     public_deps += [ "//chrome/browser/ui/views/tabs/common:impl" ]

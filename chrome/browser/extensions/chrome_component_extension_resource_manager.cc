@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -21,6 +22,9 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources_map.h"
 #include "chrome/grit/contextual_tasks_extension_resources_map.h"
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "chrome/grit/custom_component_extension_resources_map.h"
+#endif
 #include "chrome/grit/theme_resources.h"
 #include "components/contextual_tasks/public/features.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -139,6 +143,10 @@ ChromeComponentExtensionResourceManager::Data::Data() {
     }
   }
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  AddComponentResourceEntries(kCustomComponentExtensionResources);
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 
 #if BUILDFLAG(IS_CHROMEOS)
   // Add Files app JS modules resources.

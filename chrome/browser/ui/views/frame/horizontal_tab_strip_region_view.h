@@ -19,6 +19,11 @@
 
 class BrowserView;
 
+namespace custom_browser::native_ui {
+class CaptionContainerNativeUI;
+class TabStripActionContainerNativeUI;
+}  // namespace custom_browser::native_ui
+
 namespace views {
 class ActionViewController;
 class Button;
@@ -107,6 +112,8 @@ class HorizontalTabStripRegionViewOld : public TabStripRegionView {
   bool HasLeadingButtons() const;
 
  private:
+  friend class custom_browser::native_ui::TabStripActionContainerNativeUI;
+  friend class custom_browser::native_ui::CaptionContainerNativeUI;
   // Updates the border padding for `new_tab_button_`.  This should be called
   // whenever any input of the computation of the border's sizing changes.
   void UpdateButtonBorders();

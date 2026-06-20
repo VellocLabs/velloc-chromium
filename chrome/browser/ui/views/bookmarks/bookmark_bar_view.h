@@ -52,6 +52,10 @@ class BookmarkNode;
 class ManagedBookmarkService;
 }  // namespace bookmarks
 
+namespace custom_browser {
+class CustomBrowserViewLayout;
+}
+
 namespace gfx {
 class FontList;
 }
@@ -261,6 +265,7 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   friend class BookmarkBarViewTestHelper;
   friend class BookmarkBarViewEventTestBase;
+  friend class custom_browser::CustomBrowserViewLayout;
 
   // Used to identify what the user is dropping onto.
   enum class DropButtonType {

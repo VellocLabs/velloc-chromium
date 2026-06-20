@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/services/file_util/buildflags.h"
 #include "chrome/services/speech/buildflags/buildflags.h"
 #include "components/on_device_translation/buildflags/buildflags.h"
@@ -36,6 +37,10 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/services/readaloud/read_aloud_playback_controller.h"  // nogncheck
 #endif  // BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/utility/nexus/shell/services.h"
+#endif
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/services/system_signals/win/win_system_signals_service.h"
@@ -579,6 +584,10 @@ void RegisterMainThreadServices(mojo::ServiceFactory& services) {
 #if BUILDFLAG(ENABLE_ON_DEVICE_TRANSLATION)
   services.Add(RunOnDeviceTranslationService);
 #endif  // BUILDFLAG(ENABLE_ON_DEVICE_TRANSLATION)
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  nexus::RegisterNexusUtilityServices(services);
+#endif
 }
 
 void RegisterIOThreadServices(mojo::ServiceFactory& services) {
