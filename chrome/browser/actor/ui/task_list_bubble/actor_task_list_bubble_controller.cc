@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/actor/actor_keyed_service.h"
+#include "chrome/browser/actor/actor_task.h"
 #include "chrome/browser/actor/ui/actor_ui_metrics.h"
 #include "chrome/browser/actor/ui/actor_ui_state_manager_interface.h"
 #include "chrome/browser/actor/ui/task_list_bubble/actor_task_list_bubble_controller_delegate.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/tab_list/tab_list_interface.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "custom_browser/buildflags.h"
 #include "ui/base/base_window.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -310,6 +312,36 @@ void ActorTaskListBubbleController::ShowBubbleImpl(bool is_start_notification) {
   if (task_id_to_state.empty()) {
     return;
   }
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // custom-browser: suppress the end-of-task "Done" auto-popup. If every row is
+  // a finished/failed task, this ShowBubble call is the task-completion
+  // notification that Nexus doesn't want. Tasks that are still running or need
+  // attention (acting, kPausedByActor, kWaitingOnUser, …) still open the
+  // bubble, so the user can open it and pause/stop the web operation. This is
+  // the single chokepoint that every auto-open path routes through
+  // (GlicActorTaskIconManager and the nudge controller) as well as on-demand
+  // open from the toolbar icon.
+  {
+    auto* actor_service =
+        actor::ActorKeyedService::Get(browser_->GetProfile());
+    bool only_completed_tasks = actor_service != nullptr;
+    if (actor_service) {
+      auto* ui_state_manager = actor_service->GetActorUiStateManager();
+      for (const auto& entry : task_id_to_state) {
+        const auto state = ui_state_manager->GetActorTaskState(entry.first);
+        if (!state ||
+            (state.value() != actor::ActorTask::State::kFinished &&
+             state.value() != actor::ActorTask::State::kFailed)) {
+          only_completed_tasks = false;
+          break;
+        }
+      }
+    }
+    if (only_completed_tasks) {
+      return;
+    }
+  }
+#endif
   // Close any existing bubble widget to avoid stacking multiple bubble windows.
   split_button_controller_->CallOnBoth(
       base::BindRepeating([](glic::GlicSplitButtonDelegate& delegate) {

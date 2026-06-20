@@ -41,6 +41,7 @@ source_set("controller_impl") {
     "//chrome/browser/glic:mojo_bindings",
     "//chrome/browser/glic/browser_ui",
     "//chrome/browser/tab_list",
+    "//custom_browser:buildflags",
     "//ui/base",
   ]
   if (is_android) {
@@ -78,6 +79,7 @@ if (!is_android) {
       "//chrome/browser/ui/views:layout_provider",
       "//chrome/common",
       "//content/public/browser",
+      "//custom_browser:buildflags",
       "//ui/views",
     ]
   }
