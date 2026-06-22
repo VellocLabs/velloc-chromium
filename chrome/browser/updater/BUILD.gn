@@ -48,10 +48,14 @@ source_set("updater") {
       ]
       deps += [
         "//chrome/browser/google",
+        "//chrome/common:buildflags",
         "//chrome/install_static:install_static_util",
         "//chrome/installer/util:with_no_strings",
         "//chrome/updater:browser_sources",
       ]
+      if (enable_custom_browser) {
+        deps += [ "//custom_browser/common:common" ]
+      }
     }
 
     if (is_mac) {
@@ -113,6 +117,9 @@ source_set("unit_tests") {
     ]
     if (is_mac) {
       deps += [ "//chrome/updater:browser_sources" ]
+    }
+    if (is_win && enable_custom_browser) {
+      deps += [ "//custom_browser/common:common" ]
     }
   }
 }
