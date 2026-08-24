@@ -50,6 +50,7 @@ if (!is_android) {
       deps += [
         "//chrome/common:buildflags",
         "//custom_browser/browser/nexus:file_chooser_interceptor",
+        "//custom_browser/browser/nexus:agent_notice",
       ]
     }
   }

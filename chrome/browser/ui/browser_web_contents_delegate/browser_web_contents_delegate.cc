@@ -18,6 +18,9 @@
 #include "chrome/common/buildflags.h"
 #if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 #include "custom_browser/browser/nexus/upload/nexus_file_chooser_interceptor.h"
+// Nexus agent notices: suppress an unarmed native file dialog on an
+// agent-owned tab (no human to answer it) and record an out-of-band notice.
+#include "custom_browser/browser/nexus/upload/nexus_pending_agent_notice.h"
 #endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -1138,6 +1141,14 @@ void BrowserWebContentsDelegate::RunFileChooser(
   // falls through to the native picker when nothing is armed.
   if (nexus::NexusPendingUpload::TryAnswerChooser(render_frame_host, listener,
                                                   params)) {
+    return;
+  }
+  // Nothing armed. On an agent-owned tab, a native file dialog would block the
+  // headless agent window indefinitely (no human to pick a file), so cancel it
+  // and record a notice steering the model to BrowserUpload. User tabs fall
+  // through to the native dialog below.
+  if (nexus::NexusPendingAgentNotice::SuppressChooserIfAgentTab(
+          render_frame_host, listener, params)) {
     return;
   }
 #endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
