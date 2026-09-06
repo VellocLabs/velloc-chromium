@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chrome_build.gni")
 import("//build/config/ozone.gni")
 import("//chrome/common/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -96,6 +97,11 @@ if (!is_android) {
       "//ui/views",
       "//ui/views/controls/webview",
     ]
+    if (enable_custom_browser) {
+      # custom-browser: buildflag for the hidden-overlay hook in
+      # MoveCursorTo / TriggerClickAnimation.
+      deps += [ "//custom_browser:buildflags" ]
+    }
   }
 }
 
@@ -344,6 +350,13 @@ source_set("ui") {
       "//third_party/abseil-cpp:absl",
       "//ui/views",
     ]
+    if (enable_custom_browser) {
+      # custom-browser: buildflag for the handoff-button visibility hook
+      # (handoff_button_controller.cc / actor_ui_window_controller.cc). The
+      # predicate itself is header-only (//custom_browser/ui/view/
+      # view_visible_bounds.h) and needs no target.
+      deps += [ "//custom_browser:buildflags" ]
+    }
 
     # TODO(crbug.com/40031409): Fix code that adds exit-time destructors and
     # enable the diagnostic by removing this line.
