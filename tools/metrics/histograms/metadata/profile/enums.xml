@@ -430,6 +430,7 @@ chromium-metrics-reviews@google.com.
   <int value="44" label="kWebAppDatabaseCorruptionRecovery"/>
   <int value="45" label="kFetchKeepAlive"/>
   <int value="46" label="kOmniboxEverywhere"/>
+  <int value="47" label="kNexusBackgroundPanel"/>
 </enum>
 
 <!-- LINT.IfChange(ProfileLockStatus) -->

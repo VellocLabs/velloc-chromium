@@ -93,6 +93,8 @@ std::ostream& operator<<(std::ostream& out,
       return out << "kFetchKeepAlive";
     case ProfileKeepAliveOrigin::kOmniboxEverywhere:
       return out << "kOmniboxEverywhere";
+    case ProfileKeepAliveOrigin::kNexusBackgroundPanel:
+      return out << "kNexusBackgroundPanel";
   }
   NOTREACHED();
 }
