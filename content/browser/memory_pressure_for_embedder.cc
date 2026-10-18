@@ -5,11 +5,13 @@
 #include "content/public/browser/memory_pressure_for_embedder.h"
 
 #if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "base/command_line.h"
 #include "content/browser/child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process.mojom.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #endif
 
@@ -28,6 +30,14 @@ void NotifyRendererMemoryPressure(RenderProcessHost* host,
 
 int NotifyGpuMemoryPressure(base::MemoryPressureLevel level) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // An in-process GPU thread shares the browser's registry, and its child
+  // thread CHECKs against a browser-sent level.
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kSingleProcess) ||
+      command_line.HasSwitch(switches::kInProcessGPU)) {
+    return 0;
+  }
   int notified = 0;
   for (BrowserChildProcessHostIterator it(PROCESS_TYPE_GPU); !it.Done();
        ++it) {

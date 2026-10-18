@@ -2904,6 +2904,11 @@ void RenderProcessHostImpl::OnMemoryPressure(
 void RenderProcessHostImpl::NotifyMemoryPressureForEmbedder(
     base::MemoryPressureLevel level) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // An in-process renderer shares the browser's registry, and its child
+  // thread CHECKs against a browser-sent level.
+  if (run_renderer_in_process()) {
+    return;
+  }
   if (child_process_.is_bound()) {
     child_process_->OnMemoryPressure(level);
   }

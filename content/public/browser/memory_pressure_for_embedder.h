@@ -20,12 +20,14 @@ class RenderProcessHost;
 // memory-pressure listeners; nothing is terminated or frozen.
 
 // Notifies the renderer `host`. `host` must be a real renderer host (not a
-// test double). No-op while the process is not connected.
+// test double). No-op while the process is not connected or runs in the
+// browser process.
 CONTENT_EXPORT void NotifyRendererMemoryPressure(
     RenderProcessHost* host,
     base::MemoryPressureLevel level);
 
-// Notifies every running GPU process; returns how many were notified.
+// Notifies every out-of-process GPU process; returns how many were notified
+// (0 under --single-process or --in-process-gpu).
 CONTENT_EXPORT int NotifyGpuMemoryPressure(base::MemoryPressureLevel level);
 #endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 
