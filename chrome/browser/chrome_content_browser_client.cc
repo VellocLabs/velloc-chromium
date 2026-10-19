@@ -6765,6 +6765,12 @@ void ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 #endif  // BUILDFLAG (ENABLE_EXTENSIONS_CORE)
 #endif  // BUILDFLAG(ENABLE_GUEST_VIEW)
 
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  custom_browser::MaybeInterceptURLLoaderFactory(
+      browser_context, frame, type == URLLoaderFactoryType::kNavigation,
+      factory_builder);
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+
   MaybeSetTargetNetwork(GetBoundNetworkFromRenderFrameHost(frame),
                         factory_builder, is_for_network_service);
 
