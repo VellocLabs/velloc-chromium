@@ -42,8 +42,8 @@ conpty.dll: %(VersionDir)s\
 OpenConsole.exe: %(VersionDir)s\
 # Guest boot bundle, written into the out dir by pack_boot_bundle.py at the
 # workspace root (F-33); absent from a build that did not pack one.
-nexus_boot_bundle.json: %(VersionDir)s\
-nexus_boot_bundle.dat: %(VersionDir)s\
+boot_bundle.json: %(VersionDir)s\
+boot_bundle.dat: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
 vk_swiftshader.dll: %(VersionDir)s\
 vk_swiftshader_icd.json: %(VersionDir)s\
