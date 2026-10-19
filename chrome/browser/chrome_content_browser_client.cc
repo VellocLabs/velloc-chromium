@@ -6640,6 +6640,12 @@ void ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 #endif  // BUILDFLAG (ENABLE_EXTENSIONS_CORE)
 #endif  // BUILDFLAG(ENABLE_GUEST_VIEW)
 
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  custom_browser::MaybeInterceptURLLoaderFactory(
+      browser_context, frame, type == URLLoaderFactoryType::kNavigation,
+      factory_builder);
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+
   // WARNING: This must be the last interceptor in the chain as the proxying
   // URLLoaderFactory installed by this needs to be the one actually sending
   // packets over the network (to effectively target `bound_network`).
