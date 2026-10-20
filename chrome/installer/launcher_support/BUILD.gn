@@ -11,5 +11,8 @@ source_set("launcher_support") {
   deps = [
     "//base",
     "//build:branding_buildflags",
+
+    # custom_browser (Velloc): kChromeExe reads the exe name.
+    "//custom_browser:buildflags",
   ]
 }

@@ -12,6 +12,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "build/branding_buildflags.h"
+#include "custom_browser/buildflags.h"
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/exe_name.h"
+#endif
 
 namespace chrome_launcher_support {
 
@@ -32,7 +37,12 @@ const wchar_t kInstallationRegKey[] = L"Software\\Chromium";
 #endif
 
 // Copied from util_constants.cc.
+// custom_browser (Velloc): the exe takes custom_browser_exe_name.
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+const wchar_t kChromeExe[] = CUSTOM_BROWSER_EXE_FILENAME_W;
+#else
 const wchar_t kChromeExe[] = L"chrome.exe";
+#endif
 const wchar_t kUninstallStringField[] = L"UninstallString";
 const wchar_t kVersionStringField[] = L"pv";
 

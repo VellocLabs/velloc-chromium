@@ -5,7 +5,16 @@
 #include "chrome/common/chrome_constants.h"
 
 #include "build/build_config.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_version.h"
+
+// custom_browser (Velloc): the Windows exe takes custom_browser_exe_name.
+#if BUILDFLAG(IS_WIN) && BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/exe_name.h"
+#define CHROME_EXE_FILENAME CUSTOM_BROWSER_EXE_FILENAME_W
+#else
+#define CHROME_EXE_FILENAME FPL("chrome.exe")
+#endif
 
 #define FPL FILE_PATH_LITERAL
 
@@ -32,9 +41,9 @@ const char kChromeVersion[] = CHROME_VERSION_STRING;
 
 #if BUILDFLAG(IS_WIN)
 const base::FilePath::CharType kBrowserProcessExecutableName[] =
-    FPL("chrome.exe");
+    CHROME_EXE_FILENAME;
 const base::FilePath::CharType kHelperProcessExecutableName[] =
-    FPL("chrome.exe");
+    CHROME_EXE_FILENAME;
 #elif BUILDFLAG(IS_MAC)
 const base::FilePath::CharType kBrowserProcessExecutableName[] =
     FPL(PRODUCT_FULLNAME_STRING);
@@ -54,9 +63,9 @@ const base::FilePath::CharType kHelperProcessExecutableName[] = FPL("exe");
 
 #if BUILDFLAG(IS_WIN)
 const base::FilePath::CharType kBrowserProcessExecutablePath[] =
-    FPL("chrome.exe");
+    CHROME_EXE_FILENAME;
 const base::FilePath::CharType kHelperProcessExecutablePath[] =
-    FPL("chrome.exe");
+    CHROME_EXE_FILENAME;
 #elif BUILDFLAG(IS_MAC)
 const base::FilePath::CharType kBrowserProcessExecutablePath[] =
     FPL(PRODUCT_FULLNAME_STRING ".app/Contents/MacOS/" PRODUCT_FULLNAME_STRING);

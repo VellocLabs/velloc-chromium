@@ -355,6 +355,12 @@ def Readconfig(input_file, current_version):
     )
     config = configparser.ConfigParser(variables)
     config.read(input_file)
+    # custom_browser (Velloc): stage the browser exe under --exe_name.
+    exe_name = getattr(options, 'exe_name', None)
+    if exe_name and exe_name != 'chrome':
+        dest = config.get('GENERAL', 'chrome.exe', raw=True)
+        config.remove_option('GENERAL', 'chrome.exe')
+        config.set('GENERAL', exe_name + '.exe', dest)
     return config
 
 
@@ -1011,6 +1017,12 @@ def _ParseOptions():
     parser.add_option(
         '--custom_browser_version_file',
         help='Optional custom browser VERSION file (key=value) to use.',
+    )
+    # custom_browser (Velloc): executable base name, without '.exe'.
+    parser.add_option(
+        '--exe_name',
+        default='chrome',
+        help='Base name of the browser executable.',
     )
 
     options, _ = parser.parse_args()

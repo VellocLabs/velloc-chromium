@@ -17,6 +17,9 @@ executable("chrome_proxy") {
     "//base",
     "//chrome/app/version_assembly:chrome_exe_manifest",
     "//chrome/common:non_code_constants",
+
+    # custom_browser (Velloc): the launched exe takes custom_browser_exe_name.
+    "//custom_browser:buildflags",
   ]
 
   data_deps = [ "//chrome/app/version_assembly:version_assembly_manifest" ]

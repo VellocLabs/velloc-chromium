@@ -116,6 +116,17 @@ declare_args() {
                             branding_path_component != ""
 }
 
+declare_args() {
+  # custom_browser (Velloc): base name (no extension) of the browser
+  # executable and of its sibling files (VisualElementsManifest, the
+  # new_/old_ in-use update copies). "chrome" keeps upstream's layout.
+  custom_browser_exe_name = "chrome"
+}
+if (!enable_custom_browser) {
+  assert(custom_browser_exe_name == "chrome",
+         "custom_browser_exe_name requires enable_custom_browser")
+}
+
 if (enable_custom_browser) {
   _custom_browser_override_copy =
       exec_script("//custom_browser/chromium_overrides/override.py",

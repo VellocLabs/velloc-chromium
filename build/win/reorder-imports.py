@@ -18,7 +18,7 @@ sys.path.insert(
 import pefile
 
 
-def reorder_imports(input_dir, output_dir, architecture):
+def reorder_imports(input_dir, output_dir, architecture, exe_name='chrome'):
     """Swap chrome_elf.dll to be the first import of chrome.exe.
     Also copy over any related files that might be needed
     (pdbs, manifests etc.).
@@ -27,8 +27,9 @@ def reorder_imports(input_dir, output_dir, architecture):
     # correct executable in the first place, so that this script
     # only needs to verify that and not write a whole new exe.
 
-    input_image = os.path.join(input_dir, 'chrome.exe')
-    output_image = os.path.join(output_dir, 'chrome.exe')
+    # custom_browser (Velloc): exe_name follows custom_browser_exe_name.
+    input_image = os.path.join(input_dir, exe_name + '.exe')
+    output_image = os.path.join(output_dir, exe_name + '.exe')
 
     # pefile mmap()s the whole executable, and then parses parts of
     # it into python data structures for ease of processing.
@@ -90,7 +91,7 @@ def reorder_imports(input_dir, output_dir, architecture):
 
     pe.write(filename=output_image)
 
-    for fname in glob.iglob(os.path.join(input_dir, 'chrome.exe.*')):
+    for fname in glob.iglob(os.path.join(input_dir, exe_name + '.exe.*')):
         shutil.copy(fname, os.path.join(output_dir, os.path.basename(fname)))
     return 0
 
@@ -107,11 +108,15 @@ def main(argv):
     parser.add_option(
         '-a', '--arch', help='architecture of build (optional)', default='ia32'
     )
+    # custom_browser (Velloc): executable base name, without '.exe'.
+    parser.add_option(
+        '-n', '--exe-name', help='executable base name', default='chrome'
+    )
     opts, args = parser.parse_args()
 
     if not opts.input or not opts.output:
         parser.error('Please provide and input and output directory')
-    return reorder_imports(opts.input, opts.output, opts.arch)
+    return reorder_imports(opts.input, opts.output, opts.arch, opts.exe_name)
 
 
 if __name__ == "__main__":

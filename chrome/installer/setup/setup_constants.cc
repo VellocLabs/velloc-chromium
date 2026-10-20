@@ -4,13 +4,24 @@
 
 #include "chrome/installer/setup/setup_constants.h"
 
+#include "chrome/common/buildflags.h"
+
+// custom_browser (Velloc): the manifest is named after the exe.
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/exe_name.h"
+#define CHROME_EXE_BASENAME CUSTOM_BROWSER_EXE_BASENAME_W
+#else
+#define CHROME_EXE_BASENAME L"chrome"
+#endif
+
 namespace installer {
 
 // Elements that make up install paths.
 const wchar_t kChromeArchive[] = L"chrome.7z";
 const wchar_t kChromeCompressedArchive[] = L"chrome.packed.7z";
 const char kVisualElements[] = "VisualElements";
-const wchar_t kVisualElementsManifest[] = L"chrome.VisualElementsManifest.xml";
+const wchar_t kVisualElementsManifest[] =
+    CHROME_EXE_BASENAME L".VisualElementsManifest.xml";
 
 // Sub directory of install source package under install temporary directory.
 const wchar_t kInstallSourceDir[] = L"source";

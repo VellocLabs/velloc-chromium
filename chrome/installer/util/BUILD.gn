@@ -268,7 +268,11 @@ source_set("constants") {
 
     sources += [ "google_update_constants.cc" ]
 
-    public_deps = [ "//base" ]
+    # custom_browser (Velloc): util_constants.h reads the exe name.
+    public_deps = [
+      "//base",
+      "//custom_browser:buildflags",
+    ]
   }
 }
 

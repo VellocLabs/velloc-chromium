@@ -11,11 +11,22 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "chrome/common/chrome_switches.h"
+#include "custom_browser/buildflags.h"
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/exe_name.h"
+#endif
 
 namespace {
 
+// custom_browser (Velloc): launch the exe named by custom_browser_exe_name.
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+constexpr base::FilePath::CharType kChromeExecutable[] =
+    CUSTOM_BROWSER_EXE_FILENAME_W;
+#else
 constexpr base::FilePath::CharType kChromeExecutable[] =
     FILE_PATH_LITERAL("chrome.exe");
+#endif
 
 constexpr base::FilePath::CharType kChromeProxyExecutable[] =
     FILE_PATH_LITERAL("chrome_proxy.exe");

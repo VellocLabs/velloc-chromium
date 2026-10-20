@@ -11,6 +11,16 @@
 #include <stddef.h>
 
 #include "base/files/file_path.h"
+#include "custom_browser/buildflags.h"
+
+// custom_browser (Velloc): the exe and its in-use update copies take
+// custom_browser_exe_name.
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/exe_name.h"
+#define INSTALLER_CHROME_EXE_BASENAME CUSTOM_BROWSER_EXE_BASENAME_W
+#else
+#define INSTALLER_CHROME_EXE_BASENAME L"chrome"
+#endif
 
 namespace installer {
 
@@ -379,9 +389,12 @@ inline constexpr char kGoogleUpdateIsMachineEnvVar[] = "GoogleUpdateIsMachine";
 // Active Setup.
 inline constexpr wchar_t kActiveSetupExe[] = L"chrmstp.exe";
 inline constexpr wchar_t kChromeDll[] = L"chrome.dll";
-inline constexpr wchar_t kChromeExe[] = L"chrome.exe";
-inline constexpr wchar_t kChromeNewExe[] = L"new_chrome.exe";
-inline constexpr wchar_t kChromeOldExe[] = L"old_chrome.exe";
+inline constexpr wchar_t kChromeExe[] = INSTALLER_CHROME_EXE_BASENAME L".exe";
+inline constexpr wchar_t kChromeNewExe[] =
+    L"new_" INSTALLER_CHROME_EXE_BASENAME L".exe";
+inline constexpr wchar_t kChromeOldExe[] =
+    L"old_" INSTALLER_CHROME_EXE_BASENAME L".exe";
+#undef INSTALLER_CHROME_EXE_BASENAME
 inline constexpr wchar_t kChromeProxyExe[] = L"chrome_proxy.exe";
 inline constexpr wchar_t kChromeProxyNewExe[] = L"new_chrome_proxy.exe";
 inline constexpr wchar_t kChromeProxyOldExe[] = L"old_chrome_proxy.exe";

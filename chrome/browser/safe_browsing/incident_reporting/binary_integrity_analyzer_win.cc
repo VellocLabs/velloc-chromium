@@ -19,12 +19,22 @@
 #include "chrome/common/chrome_version.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
+#include "custom_browser/buildflags.h"
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/exe_name.h"
+#endif
 
 namespace safe_browsing {
 
 std::vector<base::FilePath> GetCriticalBinariesPath() {
   static constexpr auto kUnversionedFiles = std::to_array({
+  // custom_browser (Velloc): the exe takes custom_browser_exe_name.
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+      CUSTOM_BROWSER_EXE_FILENAME_W,
+#else
       FILE_PATH_LITERAL("chrome.exe"),
+#endif
   });
   static constexpr auto kVersionedFiles = std::to_array({
       FILE_PATH_LITERAL("chrome.dll"),

@@ -157,7 +157,8 @@ action("mini_installer_archive") {
   inputs = [
     "$root_out_dir/chrome.dll",
     "$root_out_dir/chrome_elf.dll",
-    "$root_out_dir/chrome.exe",
+    # custom_browser (Velloc): the exe takes custom_browser_exe_name.
+    "$root_out_dir/$custom_browser_exe_name.exe",
     "$root_out_dir/locales/en-US.pak",
     "$root_out_dir/custom_browser_strings_en-US.pak",
     "$root_out_dir/rg.exe",
@@ -196,6 +197,8 @@ action("mini_installer_archive") {
     #"--verbose",
   ]
   args += [
+    # custom_browser (Velloc): the exe takes custom_browser_exe_name.
+    "--exe_name=$custom_browser_exe_name",
     "--custom_browser_version_file",
     rebase_path(
         "$root_gen_dir/custom_browser/common/generated/custom_browser_version.txt",
