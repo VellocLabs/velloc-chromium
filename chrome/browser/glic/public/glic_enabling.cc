@@ -50,6 +50,7 @@
 #include "chrome/browser/startup_data.h"
 #include "chrome/browser/subscription_eligibility/subscription_eligibility_service_factory.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/optimization_guide/core/feature_registry/feature_registration.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -160,7 +161,8 @@ namespace {
 
 constexpr int kExperimentalTriggeringVersion = 1;
 
-signin::Tribool CanUseGeminiInChrome(const AccountCapabilities& capabilities) {
+[[maybe_unused]] signin::Tribool CanUseGeminiInChrome(
+    const AccountCapabilities& capabilities) {
   return capabilities.can_use_gemini_in_chrome();
 }
 
@@ -420,6 +422,14 @@ GlicEnabling::ProfileEnablement ComputeProfileEnablement(
   result.system_requirement_met = global_enabling.IsSystemRequirementMet();
   result.fre_is_consented = GlicEnabling::HasConsentedForProfile(profile);
   result.os_version_supported = global_enabling.IsOsVersionSupported();
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // custom_browser: no country, locale or system gate; enterprise policy,
+  // remote admin and consent still apply.
+  result.allowed_by_country_filter = true;
+  result.allowed_by_locale_filter = true;
+  result.system_requirement_met = true;
+  result.os_version_supported = true;
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 
   bool global_criteria_met = global_enabling.IsEnabledByGlobalCriteria();
   if (!global_criteria_met) {
@@ -439,6 +449,9 @@ GlicEnabling::ProfileEnablement ComputeProfileEnablement(
   }
 
   // Certain checks are bypassed if --glic-dev is passed.
+  // custom_browser: the rollout and primary-account gates are skipped, as
+  // under --glic-dev.
+#if !BUILDFLAG(ENABLE_CUSTOM_BROWSER)
   auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(::switches::kGlicDev)) {
     if (!base::FeatureList::IsEnabled(features::kGlicRollout) &&
@@ -518,6 +531,7 @@ GlicEnabling::ProfileEnablement ComputeProfileEnablement(
           primary_account.GetAccountCapabilities());
     }
   }
+#endif  // !BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 
   result.gemini_enterprise_settings =
       GlicEnabling::GetGeminiEnterpriseSettings(profile);
@@ -822,12 +836,18 @@ bool GlicGlobalEnabling::IsEnabledByGlobalCriteria() const {
   if (g_bypass_enablement_checks_for_testing) {
     return true;
   }
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // custom_browser: glic infrastructure is always created; the Nexus agent
+  // runs on it.
+  return true;
+#else
   // It is important that this value not change at runtime in production. Any
   // future updates to this function must maintain that property.
   bool is_enabled = base::FeatureList::IsEnabled(features::kGlic) &&
                     locale_enablement_.value_or(true);
 
   return is_enabled && IsOsVersionSupported() && IsSystemRequirementMet();
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 }
 
 bool GlicEnabling::IsOsVersionSupported() {

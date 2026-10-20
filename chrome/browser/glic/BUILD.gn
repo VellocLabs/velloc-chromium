@@ -533,6 +533,7 @@ source_set("impl") {
     "//chrome/browser/ui/tabs:tabs_public",
     "//chrome/browser/ui/webui/version",
     "//chrome/common",
+    "//chrome/common:buildflags",
     "//components/actor/core:journal",
     "//components/application_locale_storage",
     "//components/autofill/core/browser/integrators/actor:actor_form_filling_types",

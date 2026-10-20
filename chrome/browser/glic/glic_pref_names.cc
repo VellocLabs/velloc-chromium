@@ -12,6 +12,7 @@
 #include "chrome/browser/glic/common/local_hotkey_manager.h"
 #include "chrome/browser/glic/glic_pref_names_internal.h"
 #include "chrome/browser/glic/service/glic_onboarding_status.h"
+#include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry.h"
@@ -134,7 +135,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterListPref(prefs::kGlicActuationOnWebAllowedForURLs);
   registry->RegisterListPref(prefs::kGlicActuationOnWebBlockedForURLs);
 
-  registry->RegisterBooleanPref(prefs::kGlicUserEnabledActuationOnWeb, false);
+  // custom_browser: web actuation defaults to on; an explicit user choice
+  // still wins.
+  registry->RegisterBooleanPref(prefs::kGlicUserEnabledActuationOnWeb,
+                                BUILDFLAG(ENABLE_CUSTOM_BROWSER));
 
   registry->RegisterBooleanPref(prefs::kGlicPartitionNeedsCookieSync, true);
   registry->RegisterBooleanPref(prefs::kGlicLocalStorageCopiedToMainPartition,
