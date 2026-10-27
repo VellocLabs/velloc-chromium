@@ -75,6 +75,7 @@
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_ui.h"
+#include "custom_browser/buildflags.h"
 #include "media/base/audio_codecs.h"
 #include "net/base/url_util.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
@@ -1026,6 +1027,8 @@ void FirstRunFlowController::StartBrowsing() {
 void FirstRunFlowController::Init() {
   if (switches::IsFirstRunDesktopRevampEnabled(
           IsProfileInSearchEngineChoiceRegion(profile_))) {
+    // custom_browser: the first-run sounds are not packaged; stay silent.
+#if !BUILDFLAG(ENABLE_CUSTOM_BROWSER)
     if (base::FeatureList::IsEnabled(switches::kFirstRunDesktopRevampSound)) {
       sounds_manager_ = GetSoundsManagerFactory().Run(
           content::GetAudioServiceStreamFactoryBinder());
@@ -1049,6 +1052,7 @@ void FirstRunFlowController::Init() {
       sounds_manager_->Initialize(kAllSetSoundKey, IDR_INTRO_SOUND_ALL_SET_FLAC,
                                   media::AudioCodec::kFLAC, /*loop=*/false);
     }
+#endif  // !BUILDFLAG(ENABLE_CUSTOM_BROWSER)
   }
 
   if (switches::IsPreFirstRunDesktopRefreshEnabled()) {

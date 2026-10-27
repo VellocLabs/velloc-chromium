@@ -3775,6 +3775,11 @@ grit("resources") {
 
   defines += [ "enable_src_internal=$enable_src_internal" ]
 
+  # custom_browser: drops resources only the first-run flow uses.
+  if (enable_custom_browser) {
+    defines += [ "enable_custom_browser" ]
+  }
+
   if (enable_hangout_services_extension) {
     defines += [ "enable_hangout_services_extension" ]
   }

@@ -919,6 +919,7 @@ if (enable_dice_support) {
       "//chrome/browser:browser_public_dependencies",
     ]
     deps = [
+      "//custom_browser:buildflags",
       ":profile_management_step_controller",
       ":profile_picker_flow_controller",
       ":profile_picker_post_sign_in_adapter",

@@ -90,7 +90,7 @@
       </if>
     </structures>
     <includes>
-      <if expr="is_win or is_macosx or is_linux">
+      <if expr="(is_win or is_macosx or is_linux) and not pp_ifdef('enable_custom_browser')">
         <!-- First Run audio resources -->
         <include name="IDR_INTRO_SOUND_ALL_SET_FLAC" file="resources\intro\sounds\all_set.flac" type="BINDATA" />
         <include name="IDR_INTRO_SOUND_AMBIENT_FLAC" file="resources\intro\sounds\ambient.flac" type="BINDATA" />
