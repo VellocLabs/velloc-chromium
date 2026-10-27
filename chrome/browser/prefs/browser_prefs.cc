@@ -2292,6 +2292,11 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 #endif  // BUILDFLAG(IS_ANDROID)
 
   registry->RegisterBooleanPref(prefs::kStaticStorageQuotaEnabled, false);
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // custom_browser (Velloc): its own defaults for prefs registered above.
+  CustomBrowserUiPrefs::SetVellocProfilePrefDefaults(registry);
+#endif
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
