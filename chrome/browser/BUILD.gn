@@ -1993,6 +1993,7 @@ source_set("core") {
       "//custom_browser/browser:browser",
       "//custom_browser/chromium_hooks:chrome_integration",
       "//custom_browser/chromium_hooks:hook_core",
+      "//custom_browser/installer:uninstall_protocol",
     ]
   }
 }

@@ -73,6 +73,7 @@
 
 #if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 #include "custom_browser/installer/uninstall_data.h"
+#include "custom_browser/installer/uninstall_protocol.h"
 #endif
 
 using base::win::RegKey;
@@ -369,7 +370,21 @@ InstallStatus IsChromeActiveOrUserCancelled(
   //          give this method some brains and not kill chrome.exe launched
   //          by us, we will not uninstall if we get this return code).
   VLOG(1) << "Launching Chrome to do uninstall tasks.";
-  if (LaunchChromeAndWait(installer_state.target_path(), options, &exit_code)) {
+  bool launched =
+      LaunchChromeAndWait(installer_state.target_path(), options, &exit_code);
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // The user agreed to close a running browser: close it and ask again. A
+  // browser that survives is reported by the dialog (uninstall_protocol.h),
+  // so the loop ends when the user cancels or nothing is left running.
+  while (launched && exit_code == CHROME_RESULT_CODE_NORMAL_EXIT_EXP1) {
+    CloseAllChromeProcesses(installer_state.target_path());
+    options.AppendSwitch(
+        custom_browser::installer::kUninstallCloseFailedSwitch);
+    launched = LaunchChromeAndWait(installer_state.target_path(), options,
+                                   &exit_code);
+  }
+#endif
+  if (launched) {
     VLOG(1) << "chrome.exe launched for uninstall confirmation returned: "
             << exit_code;
     if ((exit_code == CHROME_RESULT_CODE_UNINSTALL_CHROME_ALIVE) ||

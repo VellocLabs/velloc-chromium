@@ -133,6 +133,7 @@ if (is_win) {
       deps += [
         "//chrome/common:buildflags",
         "//custom_browser/installer:uninstall_data",
+        "//custom_browser/installer:uninstall_protocol",
       ]
     }
 

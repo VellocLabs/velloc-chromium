@@ -97,6 +97,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/branded_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/common/buildflags.h"
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/installer/uninstall_protocol.h"
+#include "custom_browser/resources/grit/custom_browser_strings.h"
+#endif
 #include "chrome/install_static/install_details.h"
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
@@ -339,6 +344,34 @@ void ShowCloseBrowserFirstMessageBox() {
       l10n_util::GetStringUTF16(IDS_UNINSTALL_CLOSE_APP));
 }
 
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+// Asks whether to close the running browser so the uninstall can go on.
+// Returns CHROME_RESULT_CODE_NORMAL_EXIT_EXP1 for "close" and
+// CHROME_RESULT_CODE_UNINSTALL_USER_CANCEL for "cancel". When setup.exe has
+// already tried to close it and it is still running, the dialog says so and
+// offers to try again.
+int AskToCloseRunningBrowser() {
+  const bool close_failed =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          custom_browser::installer::kUninstallCloseFailedSwitch);
+  const std::u16string product = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+  const bool close = chrome::ShowMessageBoxWithButtonTextSync(
+                         nullptr, product,
+                         l10n_util::GetStringFUTF16(
+                             close_failed
+                                 ? IDS_VELLOC_UNINSTALL_CLOSE_FAILED
+                                 : IDS_VELLOC_UNINSTALL_CLOSE_RUNNING,
+                             product),
+                         l10n_util::GetStringUTF16(
+                             close_failed ? IDS_VELLOC_UNINSTALL_TRY_AGAIN
+                                          : IDS_VELLOC_UNINSTALL_CLOSE_AND_CONTINUE),
+                         l10n_util::GetStringUTF16(IDS_VELLOC_UNINSTALL_CANCEL)) ==
+                     chrome::MESSAGE_BOX_RESULT_YES;
+  return close ? CHROME_RESULT_CODE_NORMAL_EXIT_EXP1
+               : CHROME_RESULT_CODE_UNINSTALL_USER_CANCEL;
+}
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+
 // Updates all Progressive Web App launchers in |profile_dir| to the latest
 // version.
 void UpdatePwaLaunchersForProfile(const base::FilePath& profile_dir) {
@@ -530,8 +563,14 @@ int DoUninstallTasks(bool chrome_still_running) {
   // uninstall confirmation dialog is up, user might start Chrome, so we
   // check once again after user acknowledges Uninstall dialog.
   if (chrome_still_running) {
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+    // Offer to close the running browser instead of giving up; setup.exe
+    // does the closing (uninstall_protocol.h).
+    return AskToCloseRunningBrowser();
+#else
     ShowCloseBrowserFirstMessageBox();
     return CHROME_RESULT_CODE_UNINSTALL_CHROME_ALIVE;
+#endif
   }
   int result = ShowUninstallBrowserPrompt();
   if (browser_util::IsBrowserAlreadyRunning()) {
