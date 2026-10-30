@@ -50,6 +50,9 @@ rg.exe: %(VersionDir)s\
 # share a directory (custom_browser/installer/BUILD.gn).
 conpty.dll: %(VersionDir)s\
 OpenConsole.exe: %(VersionDir)s\
+# Licence texts of the bundled binaries above, installed beside them.
+rg-LICENSE-MIT: %(VersionDir)s\
+conpty-LICENSE-MIT: %(VersionDir)s\
 # Guest boot bundle, written into the out dir by pack_boot_bundle.py at the
 # workspace root (F-33); absent from a build that did not pack one.
 boot_bundle.json: %(VersionDir)s\
