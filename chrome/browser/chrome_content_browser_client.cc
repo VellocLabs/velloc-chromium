@@ -80,6 +80,7 @@
 #if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/navigation_throttle_registry.h"
+#include "custom_browser/browser/nexus/api/network/nexus_proxy_login.h"
 #include "custom_browser/common/product_version.h"
 #include "custom_browser/chromium_hooks/hook_dispatcher.h"
 #endif
@@ -7236,6 +7237,14 @@ ChromeContentBrowserClient::CreateLoginDelegate(
     bool first_auth_attempt,
     content::GuestPageHolder* guest,
     content::LoginDelegate::LoginAuthRequiredCallback auth_required_callback) {
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // The user's stored proxy sign-in answers their own proxy's challenge.
+  if (auto stored_sign_in = nexus::MaybeAnswerProxyChallenge(
+          browser_context, auth_info, first_auth_attempt,
+          &auth_required_callback)) {
+    return stored_sign_in;
+  }
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 #if BUILDFLAG(IS_CHROMEOS)
   // Negotiate challenge is handled via GSSAPI library, which can not receive
   // external credentials. However, on ChromeOS we can suggest the user to
