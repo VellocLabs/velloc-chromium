@@ -80,15 +80,29 @@ DirectorySet GetOldVersionDirectories(const base::FilePath& install_dir) {
 // of old_chrome*.exe executables found in |install_dir|.
 ExecutableMap GetOldExecutables(const base::FilePath& install_dir) {
   ExecutableMap executables;
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // custom_browser (Velloc): the renamed exe follows custom_browser_exe_name.
+  const base::FilePath::StringType old_exe_pattern =
+      base::FilePath(kChromeOldExe).RemoveExtension().value() +
+      FILE_PATH_LITERAL("*.exe");
+#else
+  const base::FilePath::StringType old_exe_pattern =
+      FILE_PATH_LITERAL("old_chrome*.exe");
+#endif
   base::FileEnumerator enum_executables(install_dir, false,
                                         base::FileEnumerator::FILES,
-                                        FILE_PATH_LITERAL("old_chrome*.exe"));
+                                        old_exe_pattern);
   for (base::FilePath exe_path = enum_executables.Next(); !exe_path.empty();
        exe_path = enum_executables.Next()) {
     executables[GetExecutableVersionDirName(exe_path)].push_back(exe_path);
   }
   return executables;
 }
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+bool DeleteVersion(const base::FilePath& version_directory,
+                   const PathVector& version_executables);
+#endif
 
 // Deletes directories that are in |directories| and don't have a matching
 // executable in |executables|. Returns false if any such directories could not
@@ -104,11 +118,20 @@ bool DeleteDirectoriesWithoutMatchingExecutable(
       const base::FilePath directory_path = install_dir.Append(directory_name);
       LOG(WARNING) << "Attempting to delete stray directory "
                    << directory_path.value();
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+      // custom_browser (Velloc): the exe's file version never names its
+      // version directory, so a running old version reaches this branch; it
+      // must keep its files until it exits.
+      if (!DeleteVersion(directory_path, PathVector())) {
+        success = false;
+      }
+#else
       if (!base::DeletePathRecursively(directory_path)) {
         PLOG(ERROR) << "Failed to delete stray directory "
                     << directory_path.value();
         success = false;
       }
+#endif
     }
   }
   return success;
@@ -149,10 +172,20 @@ bool DeleteExecutablesWithoutMatchingDirectory(
 // via another handle. As long as the returned object is alive, it is guaranteed
 // that |path| isn't in use. It can however be deleted.
 base::File GetFileLock(const base::FilePath& path) {
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // custom_browser (Velloc): a loaded image still admits an exclusive read
+  // open; write access is what its mapping refuses.
+  return base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
+                              base::File::FLAG_WRITE |
+                              base::File::FLAG_WIN_EXCLUSIVE_READ |
+                              base::File::FLAG_WIN_EXCLUSIVE_WRITE |
+                              base::File::FLAG_WIN_SHARE_DELETE);
+#else
   return base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ |
                               base::File::FLAG_WIN_EXCLUSIVE_READ |
                               base::File::FLAG_WIN_EXCLUSIVE_WRITE |
                               base::File::FLAG_WIN_SHARE_DELETE);
+#endif
 }
 
 // Deletes |version_directory| and all executables in |version_executables| if

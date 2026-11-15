@@ -4,6 +4,8 @@
 
 #include "chrome/installer/util/delete_old_versions.h"
 
+#include <windows.h>
+
 #include <set>
 #include <string>
 
@@ -18,6 +20,7 @@
 #include "base/version.h"
 #include "chrome/installer/test/alternate_version_generator.h"
 #include "chrome/installer/util/util_constants.h"
+#include "custom_browser/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using upgrade_test::Direction;
@@ -185,10 +188,13 @@ TEST_F(DeleteOldVersionsTest,
       CreateExecutable(installer::kChromeNewExe, Direction::NEXT_VERSION);
   ASSERT_FALSE(version_b.empty());
   ASSERT_TRUE(CreateVersionDirectory(version_b));
-  EXPECT_EQ(version_a,
-            CreateExecutable(L"old_chrome.exe", Direction::PREVIOUS_VERSION));
+  EXPECT_EQ(version_a, CreateExecutable(installer::kChromeOldExe,
+                                        Direction::PREVIOUS_VERSION));
   EXPECT_EQ(version_b,
-            CreateExecutable(L"old_chrome2.exe", Direction::NEXT_VERSION));
+            CreateExecutable(
+                base::FilePath(installer::kChromeOldExe).RemoveExtension().value() +
+                    L"2.exe",
+                Direction::NEXT_VERSION));
 
   DeleteOldVersions(install_dir());
 
@@ -280,5 +286,55 @@ TEST_F(DeleteOldVersionsTest, TypicalAfterRenameState) {
   AddVersionFiles(version_b, &expected_install_dir_content);
   EXPECT_EQ(expected_install_dir_content, GetInstallDirContent());
 }
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+// The renamed executable carries the custom exe name, so it pairs with its
+// version directory and an in-use one keeps both.
+TEST_F(DeleteOldVersionsTest, CustomOldExecutableNameIsRecognized) {
+  ASSERT_NE(base::FilePath(installer::kChromeOldExe).value(),
+            FILE_PATH_LITERAL("old_chrome.exe"));
+  const std::wstring version_a =
+      CreateExecutable(installer::kChromeOldExe, Direction::PREVIOUS_VERSION);
+  ASSERT_FALSE(version_a.empty());
+  ASSERT_TRUE(CreateVersionDirectory(version_a));
+
+  base::File file_in_use(install_dir().Append(installer::kChromeOldExe),
+                         base::File::FLAG_OPEN | base::File::FLAG_READ);
+  ASSERT_TRUE(file_in_use.IsValid());
+
+  DeleteOldVersions(install_dir());
+
+  FilePathSet expected_install_dir_content;
+  expected_install_dir_content.insert(base::FilePath(installer::kChromeOldExe));
+  AddVersionFiles(version_a, &expected_install_dir_content);
+  EXPECT_EQ(expected_install_dir_content, GetInstallDirContent());
+}
+
+// A version directory no executable names, whose chrome.dll is mapped as an
+// image (a running old version), keeps every file; once unmapped it goes.
+TEST_F(DeleteOldVersionsTest, StrayDirectoryWithMappedDllIsKept) {
+  static constexpr wchar_t kVersion[] = L"1.150.0.1";
+  ASSERT_TRUE(CreateVersionDirectory(kVersion));
+  base::FilePath current_exe_path;
+  ASSERT_TRUE(base::PathService::Get(base::FILE_EXE, &current_exe_path));
+  const base::FilePath dll_path =
+      install_dir().Append(kVersion).Append(L"chrome.dll");
+  ASSERT_TRUE(base::CopyFile(current_exe_path, dll_path));
+
+  HMODULE mapped = ::LoadLibraryExW(dll_path.value().c_str(), nullptr,
+                                    LOAD_LIBRARY_AS_IMAGE_RESOURCE);
+  ASSERT_NE(mapped, nullptr);
+
+  EXPECT_FALSE(DeleteOldVersions(install_dir()));
+
+  FilePathSet expected_install_dir_content;
+  AddVersionFiles(kVersion, &expected_install_dir_content);
+  EXPECT_EQ(expected_install_dir_content, GetInstallDirContent());
+
+  ASSERT_TRUE(::FreeLibrary(mapped));
+  EXPECT_TRUE(DeleteOldVersions(install_dir()));
+  EXPECT_TRUE(GetInstallDirContent().empty());
+}
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 
 }  // namespace installer
