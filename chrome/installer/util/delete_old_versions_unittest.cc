@@ -188,13 +188,13 @@ TEST_F(DeleteOldVersionsTest,
       CreateExecutable(installer::kChromeNewExe, Direction::NEXT_VERSION);
   ASSERT_FALSE(version_b.empty());
   ASSERT_TRUE(CreateVersionDirectory(version_b));
+  const std::wstring old_exe_name_2 =
+      base::FilePath(installer::kChromeOldExe).RemoveExtension().value() +
+      L"2.exe";
   EXPECT_EQ(version_a, CreateExecutable(installer::kChromeOldExe,
                                         Direction::PREVIOUS_VERSION));
   EXPECT_EQ(version_b,
-            CreateExecutable(
-                base::FilePath(installer::kChromeOldExe).RemoveExtension().value() +
-                    L"2.exe",
-                Direction::NEXT_VERSION));
+            CreateExecutable(old_exe_name_2, Direction::NEXT_VERSION));
 
   DeleteOldVersions(install_dir());
 
@@ -289,10 +289,13 @@ TEST_F(DeleteOldVersionsTest, TypicalAfterRenameState) {
 
 #if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 // The renamed executable carries the custom exe name, so it pairs with its
-// version directory and an in-use one keeps both.
+// version directory: an in-use one keeps both, while a version no executable
+// names is still deleted in the same pass.
 TEST_F(DeleteOldVersionsTest, CustomOldExecutableNameIsRecognized) {
   ASSERT_NE(base::FilePath(installer::kChromeOldExe).value(),
             FILE_PATH_LITERAL("old_chrome.exe"));
+  static constexpr wchar_t kAbandonedVersion[] = L"1.150.0.1";
+  ASSERT_TRUE(CreateVersionDirectory(kAbandonedVersion));
   const std::wstring version_a =
       CreateExecutable(installer::kChromeOldExe, Direction::PREVIOUS_VERSION);
   ASSERT_FALSE(version_a.empty());
@@ -302,10 +305,11 @@ TEST_F(DeleteOldVersionsTest, CustomOldExecutableNameIsRecognized) {
                          base::File::FLAG_OPEN | base::File::FLAG_READ);
   ASSERT_TRUE(file_in_use.IsValid());
 
-  DeleteOldVersions(install_dir());
+  EXPECT_FALSE(DeleteOldVersions(install_dir()));
 
   FilePathSet expected_install_dir_content;
-  expected_install_dir_content.insert(base::FilePath(installer::kChromeOldExe));
+  expected_install_dir_content.insert(
+      base::FilePath(installer::kChromeOldExe));
   AddVersionFiles(version_a, &expected_install_dir_content);
   EXPECT_EQ(expected_install_dir_content, GetInstallDirContent());
 }
