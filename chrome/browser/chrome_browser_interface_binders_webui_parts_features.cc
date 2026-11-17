@@ -157,6 +157,7 @@ void PopulateChromeWebUIFrameBindersPartsFeatures(
   RegisterWebUIControllerInterfaceBinder<custom_browser::mojom::PageHandlerFactory,
                                          CustomBrowserWebUI>(map);
   custom_browser::PopulateWebUIRenderFrameBinders(map);
+  custom_browser::OverrideRenderFrameBinders(render_frame_host, map);
 #endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
