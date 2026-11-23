@@ -241,9 +241,14 @@ void AddInfoBarsIfNecessary(BrowserWindowInterface* browser,
       !is_web_app && HasPendingUncleanExit(browser->GetProfile());
   base::UmaHistogramBoolean("Startup.CrashBubbleShown", should_display_bubble);
   if (should_display_bubble) {
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+    custom_browser::nexus_startup_ui::ShowSessionCrashedBubbleWhenAnchored(
+        browser, /*skip_tab_checking=*/false);
+#else
     SessionCrashedBubble::ShowIfNotOffTheRecordProfile(
         browser,
         /*skip_tab_checking=*/false);
+#endif
   }
 
   // These info bars are not shown when the browser is being controlled by
