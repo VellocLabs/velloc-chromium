@@ -38,6 +38,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/shared_worker_instance.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "content/public/common/buildflags.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -57,6 +58,10 @@
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/chromium_hooks/nexus_guest_groups.h"
+#endif
 
 namespace content {
 
@@ -448,6 +453,17 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
         partition->is_guest(), site_instance->GetIsolationContext().is_fenced(),
         site_instance->IsFixedStoragePartition());
   }
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // A worker of the "nexus" guest partition runs in the partition's runtime
+  // group, whichever document asked for it first.
+  if (scoped_refptr<SiteInstance> runtime_group =
+          custom_browser::GetNexusGuestGroupSiteInstance(
+              partition->browser_context(), partition->GetConfig(),
+              custom_browser::NexusGuestGroup::kRuntime)) {
+    site_instance = static_cast<SiteInstanceImpl*>(
+        runtime_group->GetRelatedSiteInstance(instance.url()).get());
+  }
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
 
   RenderProcessHost* worker_process_host = site_instance->GetOrCreateProcess(
       ProcessAllocationContext{ProcessAllocationSource::kSharedWorker});

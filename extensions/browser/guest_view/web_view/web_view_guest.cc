@@ -51,6 +51,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/buildflags.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -90,6 +91,10 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/menus/simple_menu_model.h"
 #include "url/url_constants.h"
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/chromium_hooks/nexus_guest_groups.h"
+#endif
 
 using base::UserMetricsAction;
 using content::GlobalRenderFrameHostId;
@@ -484,8 +489,21 @@ void WebViewGuest::CreateInnerPageWithStoragePartition(
   // the new tag can script each other.
   auto* guest_view_manager =
       GuestViewManager::FromBrowserContext(browser_context());
-  scoped_refptr<content::SiteInstance> guest_site_instance =
-      guest_view_manager->GetGuestSiteInstance(*partition_config);
+  scoped_refptr<content::SiteInstance> guest_site_instance;
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  // The "nexus" partition has two process groups: guests named "nexus-ui",
+  // and every other guest.
+  const std::string* guest_name = create_params.FindString(kAttributeName);
+  guest_site_instance = custom_browser::GetNexusGuestGroupSiteInstance(
+      browser_context(), *partition_config,
+      guest_name && *guest_name == custom_browser::kNexusUiGuestName
+          ? custom_browser::NexusGuestGroup::kUi
+          : custom_browser::NexusGuestGroup::kRuntime);
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+  if (!guest_site_instance) {
+    guest_site_instance =
+        guest_view_manager->GetGuestSiteInstance(*partition_config);
+  }
   if (!guest_site_instance) {
     // Create the SiteInstance in a new BrowsingInstance, which will ensure
     // that webview tags are also not allowed to send messages across
