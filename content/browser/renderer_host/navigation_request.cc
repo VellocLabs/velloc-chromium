@@ -150,6 +150,7 @@
 #include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/tracing_support.h"
 #include "content/public/browser/weak_document_ptr.h"
+#include "content/public/common/buildflags.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -250,6 +251,10 @@
 #include "content/browser/renderer_host/navigation_transitions/navigation_entry_screenshot_cache.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
+#endif
+
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+#include "custom_browser/chromium_hooks/hook_dispatcher.h"
 #endif
 
 namespace content {
@@ -4883,6 +4888,13 @@ UrlInfo NavigationRequest::GetUrlInfo() {
               blink::features::IsolateSandboxedIframesGrouping::kPerDocument) {
             url_info_init.WithUniqueSandboxId(navigation_id_);
           }
+#if BUILDFLAG(ENABLE_CUSTOM_BROWSER)
+          // A plugin app page of the Nexus guest gets a process of its own.
+          else if (std::optional<int> group =
+                       custom_browser::IsolatedSandboxGroupFor(*this)) {
+            url_info_init.WithUniqueSandboxId(*group);
+          }
+#endif  // BUILDFLAG(ENABLE_CUSTOM_BROWSER)
         }
       }
     }
